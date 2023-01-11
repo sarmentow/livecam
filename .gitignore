@@ -1,0 +1,4 @@
+rtsp-simple-server/tmp
+rtsp-simple-server/binaries
+rtsp-simple-server/coverage*.txt
+rtsp-simple-server/apidocs/*.html
