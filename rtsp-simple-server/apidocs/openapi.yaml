@@ -1,0 +1,765 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.0
+  title: rtsp-simple-server API
+  description: API of rtsp-simple-server, a server and proxy that supports various protocols.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:9997
+
+components:
+  schemas:
+    Conf:
+      type: object
+      properties:
+        # general
+        logLevel:
+          type: string
+        logDestinations:
+          type: array
+          items:
+            type: string
+        logFile:
+          type: string
+        readTimeout:
+          type: string
+        writeTimeout:
+          type: string
+        readBufferCount:
+          type: integer
+        externalAuthenticationURL:
+          type: string
+        api:
+          type: boolean
+        apiAddress:
+          type: string
+        metrics:
+          type: boolean
+        metricsAddress:
+          type: string
+        pprof:
+          type: boolean
+        pprofAddress:
+          type: string
+        runOnConnect:
+          type: string
+        runOnConnectRestart:
+          type: boolean
+
+        # RTSP
+        rtspDisable:
+          type: boolean
+        protocols:
+          type: array
+          items:
+            type: string
+        encryption:
+          type: string
+        rtspAddress:
+          type: string
+        rtspsAddress:
+          type: string
+        rtpAddress:
+          type: string
+        rtcpAddress:
+          type: string
+        multicastIPRange:
+          type: string
+        multicastRTPPort:
+          type: integer
+        multicastRTCPPort:
+          type: integer
+        serverKey:
+          type: string
+        serverCert:
+          type: string
+        authMethods:
+          type: array
+          items:
+            type: string
+
+        # RTMP
+        rtmpDisable:
+          type: boolean
+        rtmpAddress:
+          type: string
+
+        # HLS
+        hlsDisable:
+          type: boolean
+        hlsAddress:
+          type: string
+        hlsAlwaysRemux:
+          type: boolean
+        hlsVariant:
+          type: string
+        hlsSegmentCount:
+          type: integer
+        hlsSegmentDuration:
+          type: string
+        hlsPartDuration:
+          type: string
+        hlsSegmentMaxSize:
+          type: string
+        hlsAllowOrigin:
+          type: string
+        hlsEncryption:
+          type: boolean
+        hlsServerKey:
+          type: string
+        hlsServerCert:
+          type: string
+
+        paths:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PathConf'
+
+    PathConf:
+      type: object
+      properties:
+        # source
+        source:
+          type: string
+        sourceProtocol:
+          type: string
+        sourceAnyPortEnable:
+          type: boolean
+        sourceFingerprint:
+          type: string
+        sourceOnDemand:
+          type: boolean
+        sourceOnDemandStartTimeout:
+          type: string
+        sourceOnDemandCloseAfter:
+          type: string
+        sourceRedirect:
+          type: string
+        disablePublisherOverride:
+          type: boolean
+        fallback:
+          type: string
+        rpiCameraCamID:
+          type: number
+        rpiCameraWidth:
+          type: number
+        rpiCameraHeight:
+          type: number
+        rpiCameraHFlip:
+          type: boolean
+        rpiCameraVFlip:
+          type: boolean
+        rpiCameraBrightness:
+          type: number
+        rpiCameraContrast:
+          type: number
+        rpiCameraSaturation:
+          type: number
+        rpiCameraSharpness:
+          type: number
+        rpiCameraExposure:
+          type: string
+        rpiCameraAWB:
+          type: string
+        rpiCameraDenoise:
+          type: string
+        rpiCameraShutter:
+          type: number
+        rpiCameraMetering:
+          type: string
+        rpiCameraGain:
+          type: number
+        rpiCameraEV:
+          type: number
+        rpiCameraROI:
+          type: string
+        rpiCameraTuningFile:
+          type: string
+        rpiCameraMode:
+          type: string
+        rpiCameraFPS:
+          type: number
+        rpiCameraIDRPeriod:
+          type: number
+        rpiCameraBitrate:
+          type: number
+        rpiCameraProfile:
+          type: string
+        rpiCameraLevel:
+          type: string
+
+        # authentication
+        publishUser:
+          type: string
+        publishPass:
+          type: string
+        publishIPs:
+          type: array
+          items:
+            type: string
+        readUser:
+          type: string
+        readPass:
+          type: string
+        readIPs:
+          type: array
+          items:
+            type: string
+
+        # external commands
+        runOnInit:
+          type: string
+        runOnInitRestart:
+          type: boolean
+        runOnDemand:
+          type: string
+        runOnDemandRestart:
+          type: boolean
+        runOnDemandStartTimeout:
+          type: string
+        runOnDemandCloseAfter:
+          type: string
+        runOnReady:
+          type: string
+        runOnReadyRestart:
+          type: boolean
+        runOnRead:
+          type: string
+        runOnReadRestart:
+          type: boolean
+
+    Path:
+      type: object
+      properties:
+        confName:
+          type: string
+        conf:
+          $ref: '#/components/schemas/PathConf'
+        source:
+          oneOf:
+          - $ref: '#/components/schemas/PathSourceRTSPSession'
+          - $ref: '#/components/schemas/PathSourceRTSPSSession'
+          - $ref: '#/components/schemas/PathSourceRTMPConn'
+          - $ref: '#/components/schemas/PathSourceRTMPSConn'
+          - $ref: '#/components/schemas/PathSourceRTSPSource'
+          - $ref: '#/components/schemas/PathSourceRTMPSource'
+          - $ref: '#/components/schemas/PathSourceHLSSource'
+          - $ref: '#/components/schemas/PathSourceRPICameraSource'
+        sourceReady:
+          type: boolean
+        tracks:
+          type: array
+          items:
+            type: string
+            enum:
+            - Generic
+            - H264
+            - H265
+            - JPEG
+            - MPEG2Audio
+            - MPEG2Video
+            - MPEG4Audio
+            - Opus
+            - PCMA
+            - PCMU
+            - VP8
+            - VP9
+        readers:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/PathReaderRTSPSession'
+            - $ref: '#/components/schemas/PathReaderRTSPSSession'
+            - $ref: '#/components/schemas/PathReaderRTMPConn'
+            - $ref: '#/components/schemas/PathReaderHLSMuxer'
+
+    PathSourceRTSPSession:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtspSession]
+        id:
+          type: string
+
+    PathSourceRTSPSSession:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtspsSession]
+        id:
+          type: string
+
+    PathSourceRTMPConn:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtmpConn]
+        id:
+          type: string
+
+    PathSourceRTMPSConn:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtmpsConn]
+        id:
+          type: string
+
+    PathSourceRTSPSource:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtspSource]
+
+    PathSourceRTMPSource:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtmpSource]
+
+    PathSourceHLSSource:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [hlsSource]
+
+    PathSourceRPICameraSource:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rpiCameraSource]
+
+    PathReaderRTSPSession:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtspSession]
+        id:
+          type: string
+
+    PathReaderRTSPSSession:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtspsSession]
+        id:
+          type: string
+
+    PathReaderRTMPConn:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rtmpConn]
+        id:
+          type: string
+
+    PathReaderHLSMuxer:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [hlsMuxer]
+
+    RTSPSession:
+      type: object
+      properties:
+        created:
+          type: string
+        remoteAddr:
+          type: string
+        state:
+          type: string
+          enum: [idle, read, publish]
+
+    RTSPSSession:
+      type: object
+      properties:
+        remoteAddr:
+          type: string
+        state:
+          type: string
+          enum: [idle, read, publish]
+
+    RTMPConn:
+      type: object
+      properties:
+        created:
+          type: string
+        remoteAddr:
+          type: string
+        state:
+          type: string
+          enum: [idle, read, publish]
+
+    RTMPSConn:
+      type: object
+      properties:
+        created:
+          type: string
+        remoteAddr:
+          type: string
+        state:
+          type: string
+          enum: [idle, read, publish]
+
+    HLSMuxer:
+      type: object
+      properties:
+        created:
+          type: string
+        lastRequest:
+          type: string
+
+    PathsList:
+      type: object
+      properties:
+        items:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Path'
+
+    RTSPSessionsList:
+      type: object
+      properties:
+        items:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RTSPSession'
+
+    RTSPSSessionsList:
+      type: object
+      properties:
+        items:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RTSPSSession'
+
+    RTMPConnsList:
+      type: object
+      properties:
+        items:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RTMPConn'
+
+    RTMPSConnsList:
+      type: object
+      properties:
+        items:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RTMPSConn'
+
+    HLSMuxersList:
+      type: object
+      properties:
+        items:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/HLSMuxer'
+
+paths:
+  /v1/config/get:
+    get:
+      operationId: configGet
+      summary: returns the configuration.
+      description: ''
+      responses:
+        '200':
+          description: the request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conf'
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/config/set:
+    post:
+      operationId: configSet
+      summary: changes the configuration.
+      description: all fields are optional. paths can't be edited with this request, use /v1/config/paths/{operation}/{name} to edit them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conf'
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/config/paths/add/{name}:
+    post:
+      operationId: configPathsAdd
+      summary: adds the configuration of a path.
+      description: all fields are optional.
+      parameters:
+      - name: name
+        in: path
+        required: true
+        description: the name of the path.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathConf'
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/config/paths/edit/{name}:
+    post:
+      operationId: configPathsEdit
+      summary: changes the configuration of a path.
+      description: all fields are optional.
+      parameters:
+      - name: name
+        in: path
+        required: true
+        description: the name of the path.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathConf'
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/config/paths/remove/{name}:
+    post:
+      operationId: configPathsRemove
+      summary: removes the configuration of a path.
+      description: ''
+      parameters:
+      - name: name
+        in: path
+        required: true
+        description: the name of the path.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/paths/list:
+    get:
+      operationId: pathsList
+      summary: returns all active paths.
+      description: ''
+      responses:
+        '200':
+          description: the request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathsList'
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtspsessions/list:
+    get:
+      operationId: rtspSessionsList
+      summary: returns all active RTSP sessions.
+      description: ''
+      responses:
+        '200':
+          description: the request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RTSPSessionsList'
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtspsessions/kick/{id}:
+    post:
+      operationId: rtspSessionsKick
+      summary: kicks out a RTSP session from the server.
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: the ID of the session.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtspssessions/list:
+    get:
+      operationId: rtspsSessionsList
+      summary: returns all active RTSPS sessions.
+      description: ''
+      responses:
+        '200':
+          description: the request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RTSPSSessionsList'
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtspssessions/kick/{id}:
+    post:
+      operationId: rtspsSessionsKick
+      summary: kicks out a RTSPS session from the server.
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: the ID of the session.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtmpconns/list:
+    get:
+      operationId: rtmpConnsList
+      summary: returns all active RTMP connections.
+      description: ''
+      responses:
+        '200':
+          description: the request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RTMPConnsList'
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtmpconns/kick/{id}:
+    post:
+      operationId: rtmpConnsKick
+      summary: kicks out a RTMP connection from the server.
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: the ID of the connection.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtmpsconns/list:
+    get:
+      operationId: rtmpsConnsList
+      summary: returns all active RTMPS connections.
+      description: ''
+      responses:
+        '200':
+          description: the request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RTMPSConnsList'
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/rtmpsconns/kick/{id}:
+    post:
+      operationId: rtmpsConnsKick
+      summary: kicks out a RTMPS connection from the server.
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: the ID of the connection.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: the request was successful.
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
+
+  /v1/hlsmuxers/list:
+    get:
+      operationId: hlsMuxersList
+      summary: returns all active HLS muxers.
+      description: ''
+      responses:
+        '200':
+          description: the request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HLSMuxersList'
+        '400':
+          description: invalid request.
+        '500':
+          description: internal server error.
