@@ -12,6 +12,10 @@ This way there's no need for port forwarding.
 - simple-rtsp-server with custom Golang code for establishing the connection with the camera source (for the rtsp retransmission)
 - ESP32-devcam with custom Arduino code for finding the address of the retransmission server
 
+## Purpose
+The original purpose of this project was to install a camera at the best surf spots in my homecity and broadcast the surfing conditions live through the web. I have found some difficulties in finding appropriate locations to install these cameras, but I've managed to build a functioning prototype with the code in this repo. I might be able to finish this project in the future, when I come around to actually deploying this operation.
+
+
 ## Footage
 The ESP32 that served as the RTSP source
 ![ESP32 that served as the RTSP source](https://user-images.githubusercontent.com/48866794/211899196-f07802fb-2508-46b7-a2cc-6316f61e7ee8.JPG)
